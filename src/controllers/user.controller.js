@@ -49,10 +49,10 @@ const registerUser = AsyncHandler(async (req, res) => {
 
     if (age <= process.env.MIN_AGE) {
         status = "Rejected"
-        throw new ApiError(400, "Your Age Must Be 20")
+        throw new ApiError(400, "Your Age Must Be Above 20 years ")
     } else if (monthlySalary < process.env.MIN_SALARY) {
         status = "Rejected"
-        throw new ApiError(400, "Your Salary Must Be Greater Than 25000")
+        throw new ApiError(400, "Your Salary Must Be Greater Than 25k")
     } else {
         status = "Approved"
     }

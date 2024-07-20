@@ -15,6 +15,6 @@ connectToDB()
                 debuger("error: ", err)
                 throw err
             })
-            app.listen(process.env.PORT || 8000, () => debuger("server listeninng on PORT: ", process.env.PORT) )
+            app.listen(process.env.PORT || 8000, () => debuger("server listening on PORT: ", process.env.PORT) )
     })
     .catch((err) => debuger("mongoDB on Error"))

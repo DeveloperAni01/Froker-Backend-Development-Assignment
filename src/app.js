@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
-import { registerUser } from "./controllers/user.controller.js";
+import userRouter from "./routes/user.routes.js"
+
 
 
 const app = express();
@@ -16,10 +17,6 @@ app.use(express.urlencoded({
     limit: `${process.env.JSON_LIMIT}kb`
 }))
 
-app.get("/", (req, res) => {
-    res.send("everything works fine")
-})
-
-app.post("/create", registerUser)
+app.use("/froker-backend-development/api/v1", userRouter)
 
 export {app}
