@@ -9,7 +9,7 @@ router.route("/main")
         res.send("Works Fine !!")
     })
 
-router.route("/user/create")
+router.route("/user/signup")
     .post(registerUser)
 
 
