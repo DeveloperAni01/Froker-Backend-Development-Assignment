@@ -64,6 +64,7 @@ userSchema.pre("save", async function(next){
 
 userSchema.pre("save", async function(next) {
     this.purchasePower = this.monthlySalary * 0.4 - this.borrowedAmount //assuming that purchase power will be his 40% of monthly salary
+    next()
 })
 
 userSchema.methods.isPasswordCorrected = async function (password) {

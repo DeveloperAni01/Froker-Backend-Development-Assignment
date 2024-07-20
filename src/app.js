@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import userRouter from "./routes/user.routes.js"
+import cookieParser from "cookie-parser";
 
 
 
@@ -16,7 +17,8 @@ app.use(express.urlencoded({
     extended:true,
     limit: `${process.env.JSON_LIMIT}kb`
 }))
+app.use(cookieParser())
 
-app.use("/froker-backend-development/api/v1", userRouter)
+app.use("/froker-backend-development/api/v1/user", userRouter)
 
 export {app}

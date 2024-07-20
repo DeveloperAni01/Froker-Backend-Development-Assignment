@@ -20,7 +20,7 @@ const generateAcessAndRefreshTokens = async (userId) => {
     }
 };
 
-
+//controller for user registration
 const registerUser = AsyncHandler(async (req, res) => {
     const {phoneNumber, email, name, password, dateOfBirth, monthlySalary} = req.body
 
@@ -85,8 +85,87 @@ const registerUser = AsyncHandler(async (req, res) => {
     
 })
 
-const loginUser
+//controller for user login
+const loginUser = AsyncHandler (async (req, res) => {
+    //receive mail and password from user's request
+    const {email, password} = req.body
+
+    if(
+        [email, password].some((field) => 
+        field?.trim() === "")
+    ){
+        throw new ApiError(400, "All Fields Are Required !!")
+    }
+
+    if(! email.includes("@")) throw new ApiError(400, "Email Must be Conatain @")
+     
+    const user = await User.findOne({email})
+
+    if (! user) {
+        throw new ApiError(404, "User Not Founf Please Register First !!")
+    }
+
+    const isPasswordValid =  await user.isPasswordCorrected(password)
+
+    if (! isPasswordValid) {
+        throw new ApiError (40, "invalid credinantial incorrect")
+    }
+    
+    const {accessToken, refreshToken} = await generateAcessAndRefreshTokens(user._id)
+
+    const loggedInUser = await User.findById(user._id).select
+    ("-refreshToken -password")
+
+    if (! loggedInUser) {
+        new ApiError(500, "something went wrong while loggedin")
+    }
+
+    const options = { //for security purpose cookie change only by server
+        httpOnly: true,
+        secure: true
+       }
+
+       return res.status(200)
+       .cookie("accessToken", accessToken, options)
+       .cookie("refreshToken", refreshToken, options)
+       .json(
+           new ApiResponse(200, {
+               user: user.name
+           },
+           "user successfully loggedIn"
+       )
+       )
+})
+
+//controller for user logout
+const logoutUser = AsyncHandler (async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id, 
+         {
+             $unset: {
+                 refreshToken: 1 // this removes the field from document
+             }
+         },
+         {
+             new : true
+         }
+     )
+ 
+     const options = { //for security purpose cookie change only by server
+         httpOnly: true,
+         secure: true
+     }
+ 
+     return res  
+         .status(200)
+         .clearCookie("accessToken", options)
+         .clearCookie("refreshToken", options)
+         .json(new ApiResponse(200, {}, "User Logged Out Successfully"))
+ })
+
+
 
 export {
-    registerUser
+    registerUser,
+    loginUser,
+    logoutUser
 }
