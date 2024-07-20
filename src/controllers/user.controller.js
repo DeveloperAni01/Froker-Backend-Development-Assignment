@@ -254,7 +254,7 @@ const userBorrowMoney = AsyncHandler(async(req, res) => {
         throw new ApiError(500, "something went wrong !")
     }
     const {borrowAmount, tenureMonths} = req.body
-    console.log(currentUser.purchasePower)
+    
     if(borrowAmount > currentUser.purchasePower) {
         throw new ApiError(400, `Borrow Amount Must be Lesser than purchasePower, your purchase power = Rs. ${ currentUser.purchasePower}`)
     }
@@ -290,11 +290,53 @@ const userBorrowMoney = AsyncHandler(async(req, res) => {
 
     const response = {
         "Purchase Power amount": `Rs. ${currentUser.purchasePower}`,
-        "Monthly Repayment Amount": `Rs. ${monthlyRepayment?.toFixed(2)}` || "NULL"
+        "Monthly Repayment Amount": `Rs. ${monthlyRepayment?.toFixed(2)}`
     }
 
     return res.status(200)
         .json(new ApiResponse(200,response, "Data Successfully Fetched " ))
+})
+
+//controller for borrowing limit recomdation feature
+const borrowingLimitsRecommendation = AsyncHandler(async(req, res) => {
+    const currentUser = req.user
+    const {monthlyExpenses} = req.body
+
+    if (! currentUser) {
+        throw new ApiError(500, "Something Went Wrong")
+    }
+
+    if (! monthlyExpenses) {
+        throw new ApiError(400, "required monthlyExpenses")
+    }
+
+    if (monthlyExpenses > currentUser.monthlySalary) {
+        throw new ApiError(400, "maximum monthly repayment exceed monthly salary")
+    }
+
+    //my recommendation logic
+    const monthlyIncome = currentUser.monthlySalary
+    const currentDebt = currentUser.borrowedAmount
+    const safePercentage = process.env.SAFE_PERCENTAGE / 100
+    
+    const maxMonthlyRepayment = (monthlyIncome - monthlyExpenses) * safePercentage
+    const annualInterestRate = process.env.ANNUAL_INTEREST_RATE / 100
+    const tenureMonths = 12 //Assuming that 1 year tenure for simplicity
+    const monthlyInterestRate = annualInterestRate / tenureMonths
+    const maxLoanAmount = (maxMonthlyRepayment * (1 - Math.pow(1 + monthlyInterestRate, -tenureMonths)) / monthlyInterestRate) - currentDebt
+
+    try {
+        const recommendation = {
+            "Your Existing Debt": `Rs. ${currentDebt}`,
+            "Your Monthly Salary": `Rs. ${monthlyIncome}`,
+            "Recommendation": `Based on yur financial data, you can afford loan amount upto Rs. ${maxLoanAmount.toFixed(2)} to ensure your monthly repayments do not exceed Rs. ${maxMonthlyRepayment.toFixed(2)}.`
+        }
+
+        return res.status(200)
+            .json(new ApiResponse(200, recommendation, "Recommendation Successfully Fetched"))
+    } catch (error) {
+        throw new ApiError(500, error)
+    }
 })
 
 export {
@@ -304,5 +346,6 @@ export {
     currentUserData,
     refreshAccessToken,
     changeCurrenPassword,
-    userBorrowMoney
+    userBorrowMoney,
+    borrowingLimitsRecommendation
 }

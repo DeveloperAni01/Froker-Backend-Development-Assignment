@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { changeCurrenPassword,
+import { borrowingLimitsRecommendation, changeCurrenPassword,
         currentUserData,
         loginUser,
         logoutUser,
@@ -47,6 +47,9 @@ router.route("/user/changeCurrentPassword")
 router.route("/user/borrow")
     .post(verifyJWT, userBorrowMoney)
 
+//route for borrowing limit recommendation
+router.route("/user/recommendation")
+    .post(verifyJWT, borrowingLimitsRecommendation)
 
 
 export default router

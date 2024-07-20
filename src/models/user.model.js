@@ -66,7 +66,7 @@ userSchema.pre("save", async function(next) {
      // Check if either 'monthlySalary' or 'borrowedAmount' has been modified
      if (this.isModified("monthlySalary") || this.isModified("borrowedAmount")) {
         // Update the 'purchasePower' based on the current values of 'monthlySalary' and 'borrowedAmount'
-        this.purchasePower = this.monthlySalary * 0.4 - this.borrowedAmount;
+        this.purchasePower = this.monthlySalary * 0.5 - this.borrowedAmount;
     }
     next();
 })
