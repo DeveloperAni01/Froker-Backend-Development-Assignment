@@ -63,8 +63,12 @@ userSchema.pre("save", async function(next){
 })
 
 userSchema.pre("save", async function(next) {
-    this.purchasePower = this.monthlySalary * 0.4 - this.borrowedAmount //assuming that purchase power will be his 40% of monthly salary
-    next()
+     // Check if either 'monthlySalary' or 'borrowedAmount' has been modified
+     if (this.isModified("monthlySalary") || this.isModified("borrowedAmount")) {
+        // Update the 'purchasePower' based on the current values of 'monthlySalary' and 'borrowedAmount'
+        this.purchasePower = this.monthlySalary * 0.4 - this.borrowedAmount;
+    }
+    next();
 })
 
 userSchema.methods.isPasswordCorrected = async function (password) {

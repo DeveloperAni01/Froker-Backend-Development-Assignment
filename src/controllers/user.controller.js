@@ -104,13 +104,13 @@ const loginUser = AsyncHandler (async (req, res) => {
     const user = await User.findOne({email})
 
     if (! user) {
-        throw new ApiError(404, "User Not Founf Please Register First !!")
+        throw new ApiError(404, "User Not Found Please Register First !!")
     }
 
     const isPasswordValid =  await user.isPasswordCorrected(password)
 
     if (! isPasswordValid) {
-        throw new ApiError (40, "invalid credinantial incorrect")
+        throw new ApiError (40, "invalid credinantial ")
     }
     
     const {accessToken, refreshToken} = await generateAcessAndRefreshTokens(user._id)
@@ -184,9 +184,125 @@ const currentUserData = AsyncHandler(async(req, res) => {
     
 })
 
+//controller for refresh accessToken
+const refreshAccessToken = AsyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshAccessToken // here I use req.body because of if some cases cookie comes from body then it will handle that
+
+    if(!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorized request !")
+    }
+
+    try {
+        const decodedToken = JWT.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    
+        const user = await User.findById(decodedToken?._id)
+    
+        if (!user) {
+            throw new ApiError(401, "invalid request token")
+        }
+    
+        if (incomingRefreshToken !== user.refreshToken) {
+            throw new ApiError(401, "refresh token used or expired")
+        }
+    
+        options = {
+            httpOnly: true,
+            secure: true
+        }
+        const {accessToken, newRefreshToken} = await  generateAcessAndRefreshTokens(user._id)
+    
+        return res.status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse(200, {accessToken,refreshToken: newRefreshToken},"refreshed syccessfully")
+            )
+    } catch (error) {
+        throw new ApiError (401, error?.message, "invalid request token ")
+    }
+}) 
+
+//controller for changeCurrentPassword
+const changeCurrenPassword = AsyncHandler(async (req, res) => {
+    const {oldPassword, newPassword} = req.body
+    if ([oldPassword, newPassword].some((field) => 
+        field?.trim() === "")
+    ) {
+        throw new ApiError(400, "Please Give the necessary credentials")
+    }
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect = await user.isPasswordCorrected(oldPassword)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(400, "Invalid Old Password")
+    };
+
+    user.password = newPassword
+    await user.save({validateBeforeSave: false})
+    
+    return res.status(200)
+        .json(
+            new ApiResponse(200, {}, "Passoword Successfully Changed")
+        )
+})
+
+//controller for handle user borrow money
+const userBorrowMoney = AsyncHandler(async(req, res) => {
+    const currentUser = req.user
+    
+    if (! currentUser) {
+        throw new ApiError(500, "something went wrong !")
+    }
+    const {borrowAmount, tenureMonths} = req.body
+    console.log(currentUser.purchasePower)
+    if(borrowAmount > currentUser.purchasePower) {
+        throw new ApiError(400, `Borrow Amount Must be Lesser than purchasePower, your purchase power = Rs. ${ currentUser.purchasePower}`)
+    }
+    
+    if(
+        [borrowAmount, tenureMonths].some((field) => 
+            field?.trim() === "")
+    ){
+        throw new ApiError(400, "Required All Fields !!")
+    }
+
+    const parsedBorrowAmount = parseFloat(borrowAmount);
+    const parsedTenureMonths = parseInt(tenureMonths, 10);
+
+    if (isNaN(parsedBorrowAmount) || isNaN(parsedTenureMonths)) {
+        throw new ApiError(400, "Invalid borrow amount or tenure months!");
+    }
+
+    //update borrowed ammount
+    currentUser.borrowedAmount += parsedBorrowAmount
+
+    //calculate monthly repayment ammount with 8% annual interest rate
+    const monthlyInterestRate = process.env.ANNUAL_INTEREST_RATE / 12
+    const monthlyRepayment = (borrowAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -parsedBorrowAmount))
+
+    try {
+        await currentUser.save({
+            validateBeforeSave: false
+        })
+    } catch (error) {
+        throw new ApiError(500, "Something Went Wrong !!")
+    }
+
+    const response = {
+        "Purchase Power amount": `Rs. ${currentUser.purchasePower}`,
+        "Monthly Repayment Amount": `Rs. ${monthlyRepayment?.toFixed(2)}` || "NULL"
+    }
+
+    return res.status(200)
+        .json(new ApiResponse(200,response, "Data Successfully Fetched " ))
+})
+
 export {
     registerUser,
     loginUser,
     logoutUser,
-    currentUserData
+    currentUserData,
+    refreshAccessToken,
+    changeCurrenPassword,
+    userBorrowMoney
 }
