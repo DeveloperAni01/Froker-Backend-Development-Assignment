@@ -3,6 +3,7 @@ import bcrypt from "bcrypt"
 import JWT from "jsonwebtoken"
 import mongoose from "mongoose"
 
+//create userSchema
 const userSchema = new Schema ({
     phoneNumber: {
         type: Number,
@@ -55,10 +56,12 @@ const userSchema = new Schema ({
 
 }, {timestamps: true})
 
-userSchema.pre("save", async function(next){
-    if(! this.isModified("password")) return next();
 
-    this.password = await bcrypt.hash(this.password, 10)
+//create mongoose middlewares (mongoose.pre hooks)
+userSchema.pre("save", async function(next){
+    if(! this.isModified("password")) return next(); //is password not modified call next()
+
+    this.password = await bcrypt.hash(this.password, 10) //save encrypted password using bcrypt
     next()
 })
 
@@ -71,11 +74,14 @@ userSchema.pre("save", async function(next) {
     next();
 })
 
+//define mongoose methods for check password
 userSchema.methods.isPasswordCorrected = async function (password) {
     return  await bcrypt.compare(password, this.password)
 }
 
+//define mongoose methods for generateAcessToken
 userSchema.methods.generateAcessToken = function() {
+    //Use JWT authentication
     return JWT.sign(
         {
             _id: this._id,
@@ -89,6 +95,7 @@ userSchema.methods.generateAcessToken = function() {
     )
 }
 
+//define mongoose methods for generateAcessToken
 userSchema.methods.generateRefreshToken = function () {
     return  JWT.sign(
         {

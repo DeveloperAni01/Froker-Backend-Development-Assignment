@@ -1,3 +1,4 @@
+//define self Error class extends Error class
 class ApiError extends Error {
     constructor(
         statusCode,

@@ -6,15 +6,10 @@ import { borrowingLimitsRecommendation, changeCurrenPassword,
         refreshAccessToken, 
         registerUser, 
         userBorrowMoney} from "../controllers/user.controller.js";
-import verifyJWT from "../middlewares/auth.middleware.js";
+import verifyJWT from "../middlewares/auth-middleware.js";
 
 const router = Router();
 
-
-router.route("/main")
-    .get((req, res) => {
-        res.send("Works Fine !!")
-    })
 
 //route for user signup
 router.route("/user/signup")

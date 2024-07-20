@@ -4,6 +4,7 @@ import debug from "debug"
 
 const debuger = debug("development:mongoose")
 
+//helper function to mongoDB connection 
 const connectToDB = async () => {
     try {
         const connectionInstance = await mongoose.connect(`${process.env.MONGODB_URL}/${DB_NAME}`)

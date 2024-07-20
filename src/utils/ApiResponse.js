@@ -1,3 +1,4 @@
+//define self response class
 class ApiResponse {
     constructor(
         statusCode,
