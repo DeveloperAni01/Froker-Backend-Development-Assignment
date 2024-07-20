@@ -3,6 +3,7 @@ import {User} from "../models/user.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import { calculateAge, parseDate } from "../utils/AgeValidator.js";
+import moment from "moment";
 
 
 const generateAcessAndRefreshTokens = async (userId) => {
@@ -92,10 +93,11 @@ const loginUser = AsyncHandler (async (req, res) => {
 
     if(
         [email, password].some((field) => 
-        field?.trim() === "")
-    ){
-        throw new ApiError(400, "All Fields Are Required !!")
-    }
+            field?.trim() === "")
+        ){
+            throw new ApiError(400, "All Fields are Required")
+        }
+
 
     if(! email.includes("@")) throw new ApiError(400, "Email Must be Conatain @")
      
@@ -162,10 +164,29 @@ const logoutUser = AsyncHandler (async (req, res) => {
          .json(new ApiResponse(200, {}, "User Logged Out Successfully"))
  })
 
+//controller for get user data
+const currentUserData = AsyncHandler(async(req, res) => {
+    const currentUser = req.user;
+    if (!currentUser) {
+        throw new ApiError(500, "Something Went Wrong")
+    }
+    const currentUserData = {
+        "Purchase Power amount": `Rs. ${currentUser.purchasePower}`,
+        "Phone number": `${currentUser.phoneNumber}`,
+        "Email ": currentUser.email,
+        "Date of user registration": moment(currentUser.dateOfRegistration).format('DD.MM.YYYY'),
+        "DOB ": currentUser.dateOfBirth,
+        "Monthly salary": `Rs. ${currentUser.monthlySalary}`
+    }
 
+    return res.status(200)
+        .json(new ApiResponse(200, currentUserData, "User Data Successfully Displayed"))
+    
+})
 
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    currentUserData
 }

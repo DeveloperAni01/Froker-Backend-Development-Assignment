@@ -19,6 +19,6 @@ app.use(express.urlencoded({
 }))
 app.use(cookieParser())
 
-app.use("/froker-backend-development/api/v1/user", userRouter)
+app.use("/froker-backend-development/api/v1", userRouter)
 
 export {app}
