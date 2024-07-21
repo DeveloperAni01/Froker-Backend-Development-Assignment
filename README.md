@@ -12,5 +12,5 @@ This project is a backend implementation for a money lending application similar
 
 ## Getting Started
 
-POSTMAN DOCUMENTATION LINK : https://documenter.getpostman.com/view/36163643/2sA3kUH2cL
-GOOGLE DRIVE ALL OUTPUT LINK : https://drive.google.com/drive/folders/16Wq8nzm68oWVQXjzHZ2-hpFBowoIRBkp?usp=drive_link
+## POSTMAN DOCUMENTATION LINK : https://documenter.getpostman.com/view/36163643/2sA3kUH2cL
+## GOOGLE DRIVE ALL OUTPUT LINK : https://drive.google.com/drive/folders/16Wq8nzm68oWVQXjzHZ2-hpFBowoIRBkp?usp=drive_link
