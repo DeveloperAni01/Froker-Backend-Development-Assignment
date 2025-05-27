@@ -95,7 +95,7 @@ userSchema.methods.generateAcessToken = function() {
     )
 }
 
-//define mongoose methods for generateAcessToken
+//define mongoose methods for generateRefreshToken
 userSchema.methods.generateRefreshToken = function () {
     return  JWT.sign(
         {
