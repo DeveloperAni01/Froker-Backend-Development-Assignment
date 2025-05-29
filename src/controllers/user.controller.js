@@ -312,8 +312,8 @@ const userBorrowMoney = AsyncHandler(async(req, res) => {
     currentUser.borrowedAmount += parsedBorrowAmount
 
     //calculate monthly repayment ammount
-    const monthlyInterestRate = process.env.ANNUAL_INTEREST_RATE / 12
-    const monthlyRepayment = (borrowAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -parsedBorrowAmount)) //calculate monthlyRepayment with the help of standard AMORTIZATION Formula 
+    const monthlyInterestRate = (process.env.ANNUAL_INTEREST_RATE / 12) / 100;
+    const monthlyRepayment = (borrowAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -parsedTenureMonths)) //calculate monthlyRepayment with the help of standard AMORTIZATION Formula 
 
     try {
         await currentUser.save({
